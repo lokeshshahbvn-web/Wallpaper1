@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.sonymobile.wallpaper.xperiaflow"
+    android:versionCode="100"
+    android:versionName="1.0.0-android16">
+
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36" />
+    <uses-feature android:name="android.software.live_wallpaper" android:required="true" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        android:label="Xperia Flow - Rose Bronze"
+        android:icon="@mipmap/ic_launcher"
+        android:supportsRtl="true">
+
+        <service
+            android:name=".XperiaFlowWallpaperService"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Xperia Flow (Rose Bronze)"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/wallpaper" />
+        </service>
+    </application>
+</manifest>
