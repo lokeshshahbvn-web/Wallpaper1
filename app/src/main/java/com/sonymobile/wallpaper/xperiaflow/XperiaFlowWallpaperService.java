@@ -24,6 +24,16 @@ import java.util.List;
  */
 public class XperiaFlowWallpaperService extends WallpaperService {
 
+    private static class Shockwave {
+        float x, y, radius, strength;
+        Shockwave(float x, float y, float strength) {
+            this.x = x;
+            this.y = y;
+            this.radius = 12f;
+            this.strength = strength;
+        }
+    }
+
     @Override
     public Engine onCreateEngine() {
         return new FlowEngine();
@@ -53,9 +63,9 @@ public class XperiaFlowWallpaperService extends WallpaperService {
 
         private final float mSpeed = 0.35f;
         private final float mTouchSens = 1.2f;
-        private final float mWaveAmp = 1f;
+        private final float mWaveAmp = 1.0f;
 
-        // Theme colors
+        // Theme colors: Rose Bronze
         private final int mBgTop = Color.parseColor("#4a3c36");
         private final int mBgCenter = Color.parseColor("#2b211d");
         private final int mBgBottom = Color.parseColor("#130d0b");
@@ -63,16 +73,6 @@ public class XperiaFlowWallpaperService extends WallpaperService {
         private final int mRibbon2 = Color.parseColor("#9e7d69");
         private final int mRibbon3 = Color.parseColor("#5c4338");
         private final int mRimLight = Color.parseColor("#f4e4d7");
-
-        private static class Shockwave {
-            float x, y, radius, strength;
-            Shockwave(float x, float y, float strength) {
-                this.x = x;
-                this.y = y;
-                this.radius = 12f;
-                this.strength = strength;
-            }
-        }
 
         private final Runnable mDrawRunnable = new Runnable() {
             @Override
@@ -159,7 +159,7 @@ public class XperiaFlowWallpaperService extends WallpaperService {
 
             mHandler.removeCallbacks(mDrawRunnable);
             if (mVisible) {
-                mHandler.postDelayed(mDrawRunnable, 16); // 60 FPS
+                mHandler.postDelayed(mDrawRunnable, 16);
             }
         }
 
@@ -172,12 +172,10 @@ public class XperiaFlowWallpaperService extends WallpaperService {
 
             float time = (now - mStartTime) * (0.00038f * mSpeed);
 
-            // Update touch relaxation
             if (!mTouchActive && mTouchIntensity > 0.01f) {
                 mTouchIntensity *= (1.0f - dt * 4.5f);
             }
 
-            // Update shockwaves
             Iterator<Shockwave> it = mShockwaves.iterator();
             while (it.hasNext()) {
                 Shockwave sw = it.next();
@@ -188,7 +186,7 @@ public class XperiaFlowWallpaperService extends WallpaperService {
                 }
             }
 
-            // 1. Draw 3-stop ambient background gradient
+            // 1. Ambient Background Gradient
             mBgPaint.setShader(new LinearGradient(
                 0, 0, w * 0.40f, h,
                 new int[] { mBgTop, mBgCenter, mBgBottom },
@@ -197,7 +195,7 @@ public class XperiaFlowWallpaperService extends WallpaperService {
             ));
             canvas.drawRect(0, 0, w, h, mBgPaint);
 
-            // 2. Draw atmospheric upper radial glow
+            // 2. Atmospheric Upper Radial Glow
             int glowColor = Color.argb(110, Color.red(mRibbon1), Color.green(mRibbon1), Color.blue(mRibbon1));
             mGlowPaint.setShader(new RadialGradient(
                 w * 0.35f, h * 0.32f, Math.max(w, h) * 0.75f,
@@ -207,7 +205,7 @@ public class XperiaFlowWallpaperService extends WallpaperService {
             ));
             canvas.drawRect(0, 0, w, h, mGlowPaint);
 
-            // 3. Render 3 depth layers back-to-front
+            // 3. Render 3 Depth Layers Back-to-Front
             renderRibbonLayer(canvas, 2, 3, time * 0.75f, mScrollOffset, w, h);
             renderRibbonLayer(canvas, 1, 3, time * 0.90f, mScrollOffset, w, h);
             renderRibbonLayer(canvas, 0, 3, time * 1.05f, mScrollOffset, w, h);
@@ -227,7 +225,6 @@ public class XperiaFlowWallpaperService extends WallpaperService {
                 float x = i * step;
                 float normX = (x - parallax) / w;
 
-                // Xperia sweeping diagonal spline
                 float diagonal = (1.0f - (float) Math.pow(Math.max(0, Math.min(1.05f, normX)), 1.35f)) * 0.48f;
                 float wave1 = (float) Math.sin(normX * 3.2f - time * 0.8f + layerIndex * 0.9f) * (42f * mWaveAmp);
                 float wave2 = (float) Math.cos(normX * 5.4f + time * 0.45f - layerIndex * 0.6f) * (18f * mWaveAmp);
@@ -235,7 +232,6 @@ public class XperiaFlowWallpaperService extends WallpaperService {
 
                 float y = h * (0.54f - diagonal) + layerOffset + harmonic;
 
-                // Interactive touch deflection
                 if (mTouchIntensity > 0.01f) {
                     float dx = x - mTouchX;
                     float dy = y - mTouchY;
@@ -247,7 +243,6 @@ public class XperiaFlowWallpaperService extends WallpaperService {
                     }
                 }
 
-                // Hydrodynamic shockwaves
                 for (Shockwave sw : mShockwaves) {
                     float dx = x - sw.x;
                     float dy = y - sw.y;
@@ -263,7 +258,6 @@ public class XperiaFlowWallpaperService extends WallpaperService {
                 py[i] = y;
             }
 
-            // Build smooth quadratic Bezier ribbon body
             mRibbonPath.reset();
             mRibbonPath.moveTo(0, h);
             mRibbonPath.lineTo(px[0], py[0]);
@@ -285,7 +279,6 @@ public class XperiaFlowWallpaperService extends WallpaperService {
             mRibbonPath.lineTo(w, h);
             mRibbonPath.close();
 
-            // Distinct multi-stop linear gradient per depth layer
             LinearGradient ribbonShader;
             if (layerIndex == 0) {
                 ribbonShader = new LinearGradient(
@@ -316,7 +309,6 @@ public class XperiaFlowWallpaperService extends WallpaperService {
             mRibbonPaint.setShader(ribbonShader);
             canvas.drawPath(mRibbonPath, mRibbonPaint);
 
-            // Specular illuminated crest line on the upper edge
             if (layerIndex == 0) {
                 mCrestPaint.setColor(mRimLight);
                 mCrestPaint.setStrokeWidth(3.2f);
